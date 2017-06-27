@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 MovingBlocks
+ * Copyright 2017 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 package org.terasology.rendering.dag;
 
 import com.google.common.collect.Lists;
+import org.terasology.context.Context;
+import org.terasology.rendering.world.WorldRenderer;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -26,6 +29,12 @@ import java.util.function.Supplier;
  */
 public abstract class ConditionDependentNode extends AbstractNode implements PropertyChangeListener {
     private List<Supplier<Boolean>> conditions = Lists.newArrayList();
+
+    private WorldRenderer worldRenderer;
+
+    protected ConditionDependentNode(Context context) {
+        worldRenderer = context.get(WorldRenderer.class);
+    }
 
     protected void requiresCondition(Supplier<Boolean> condition) {
         conditions.add(condition);
@@ -53,7 +62,7 @@ public abstract class ConditionDependentNode extends AbstractNode implements Pro
     public void propertyChange(PropertyChangeEvent evt) {
         boolean conditionsChanged = checkConditions();
         if (conditionsChanged) {
-            refreshTaskList(); // TODO: Think about `pending` mode for the nodes, for not refreshing task list more than once
+            worldRenderer.requestTaskListRefresh();
         }
     }
 }

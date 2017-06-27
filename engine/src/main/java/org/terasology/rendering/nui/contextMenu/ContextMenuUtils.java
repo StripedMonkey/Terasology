@@ -17,6 +17,7 @@ package org.terasology.rendering.nui.contextMenu;
 
 import com.google.common.collect.Lists;
 import org.terasology.math.geom.Vector2i;
+import org.terasology.module.sandbox.API;
 import org.terasology.rendering.nui.NUIManager;
 import org.terasology.rendering.nui.databinding.Binding;
 import org.terasology.rendering.nui.databinding.ReadOnlyBinding;
@@ -29,7 +30,8 @@ import java.util.List;
  * <p>
  * Should be used in favor of manually creating the screen.
  */
-public class ContextMenuUtils {
+@API
+public final class ContextMenuUtils {
     private ContextMenuUtils() {
 
     }
@@ -96,7 +98,7 @@ public class ContextMenuUtils {
         private List<AbstractContextMenuItem> options = Lists.newArrayList();
         private boolean visible;
 
-        public VisibleTree(MenuTree tree, boolean visible) {
+        VisibleTree(MenuTree tree, boolean visible) {
             this.name = tree.getName();
             for (AbstractContextMenuItem option : tree.getOptions()) {
                 if (option instanceof MenuTree) {

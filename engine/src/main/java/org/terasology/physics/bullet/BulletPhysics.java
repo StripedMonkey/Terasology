@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 MovingBlocks
+ * Copyright 2016 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Physics engine implementation using TeraBullet (a customised version of JBullet)
+ * Physics engine implementation using TeraBullet (a customised version of JBullet).
  */
 public class BulletPhysics implements PhysicsEngine {
 
@@ -210,7 +210,7 @@ public class BulletPhysics implements PhysicsEngine {
     public HitResult rayTrace(org.terasology.math.geom.Vector3f from1, org.terasology.math.geom.Vector3f direction, float distance, Set<EntityRef> excludedEntities,
             CollisionGroup... collisionGroups) {
         if (excludedEntities == null) {
-            return rayTrace(from1, direction,distance,collisionGroups);
+            return rayTrace(from1, direction, distance, collisionGroups);
         }
         Vector3f to = new Vector3f(VecMath.to(direction));
         Vector3f from = VecMath.to(from1);
@@ -456,10 +456,11 @@ public class BulletPhysics implements PhysicsEngine {
             float scale = location.getWorldScale();
             shape.setLocalScaling(new Vector3f(scale, scale, scale));
             List<CollisionGroup> detectGroups = Lists.newArrayList(trigger.detectGroups);
+            CollisionGroup collisionGroup = trigger.collisionGroup;
             PairCachingGhostObject triggerObj = createCollider(
                     VecMath.to(location.getWorldPosition()),
                     shape,
-                    StandardCollisionGroup.SENSOR.getFlag(),
+                    collisionGroup.getFlag(),
                     combineGroups(detectGroups),
                     CollisionFlags.NO_CONTACT_RESPONSE);
             triggerObj.setUserPointer(entity);
@@ -709,12 +710,18 @@ public class BulletPhysics implements PhysicsEngine {
                     if (((CollisionObject) initialPair.pProxy1.clientObject).getUserPointer() instanceof EntityRef) {
                         otherEntity = (EntityRef) ((CollisionObject) initialPair.pProxy1.clientObject).getUserPointer();
                     }
+                    else if(((CollisionObject) initialPair.pProxy1.clientObject).getUserPointer() instanceof Vector3i){
+                        otherEntity = blockEntityRegistry.getBlockEntityAt((Vector3i)((CollisionObject) initialPair.pProxy1.clientObject).getUserPointer());
+                    }
                 } else {
                     if (((CollisionObject) initialPair.pProxy0.clientObject).getUserPointer() instanceof EntityRef) {
                         otherEntity = (EntityRef) ((CollisionObject) initialPair.pProxy0.clientObject).getUserPointer();
                     }
+                    else if(((CollisionObject) initialPair.pProxy0.clientObject).getUserPointer() instanceof Vector3i){
+                        otherEntity = blockEntityRegistry.getBlockEntityAt((Vector3i)((CollisionObject) initialPair.pProxy0.clientObject).getUserPointer());
+                    }
                 }
-                if (otherEntity == null) {
+                if (otherEntity == null || otherEntity == EntityRef.NULL) {
                     continue;
                 }
                 BroadphasePair pair = world.getPairCache().findPair(initialPair.pProxy0, initialPair.pProxy1);
@@ -729,7 +736,11 @@ public class BulletPhysics implements PhysicsEngine {
                     for (int point = 0; point < manifold.getNumContacts(); ++point) {
                         ManifoldPoint manifoldPoint = manifold.getContactPoint(point);
                         if (manifoldPoint.getDistance() < 0) {
-                            collisionPairs.add(new PhysicsSystem.CollisionPair(entity, otherEntity));
+                            collisionPairs.add(new PhysicsSystem.CollisionPair(entity, otherEntity,
+                                    VecMath.from(manifoldPoint.positionWorldOnA),
+                                    VecMath.from(manifoldPoint.positionWorldOnB),
+                                    manifoldPoint.getDistance(),
+                                    VecMath.from(manifoldPoint.normalWorldOnB)));
                             break;
                         }
                     }
@@ -744,7 +755,7 @@ public class BulletPhysics implements PhysicsEngine {
     private static class ClosestRayResultWithUserDataCallbackExcludingCollisionIds extends CollisionWorld.ClosestRayResultWithUserDataCallback {
         Set<Integer> excludedIds;
 
-        public ClosestRayResultWithUserDataCallbackExcludingCollisionIds(Vector3f rayFromWorld, Vector3f rayToWorld, Set<Integer> excludedIds) {
+        ClosestRayResultWithUserDataCallbackExcludingCollisionIds(Vector3f rayFromWorld, Vector3f rayToWorld, Set<Integer> excludedIds) {
             super(rayFromWorld, rayToWorld);
             this.excludedIds = excludedIds;
         }
@@ -764,7 +775,7 @@ public class BulletPhysics implements PhysicsEngine {
         final short groups;
         final short filter;
 
-        public RigidBodyRequest(BulletRigidBody body, short groups, short filter) {
+        RigidBodyRequest(BulletRigidBody body, short groups, short filter) {
             this.body = body;
             this.groups = groups;
             this.filter = filter;

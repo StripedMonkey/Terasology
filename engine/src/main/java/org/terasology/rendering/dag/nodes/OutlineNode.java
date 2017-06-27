@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 MovingBlocks
+ * Copyright 2017 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,47 +18,47 @@ package org.terasology.rendering.dag.nodes;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.config.Config;
 import org.terasology.config.RenderingConfig;
+import org.terasology.context.Context;
 import org.terasology.monitoring.PerformanceMonitor;
-import org.terasology.registry.In;
 import org.terasology.rendering.dag.ConditionDependentNode;
-import org.terasology.rendering.dag.stateChanges.BindFBO;
+import org.terasology.rendering.dag.stateChanges.BindFbo;
 import org.terasology.rendering.dag.stateChanges.EnableMaterial;
 import org.terasology.rendering.opengl.FBO;
 import org.terasology.rendering.opengl.FBOConfig;
 import org.terasology.rendering.opengl.fbms.DisplayResolutionDependentFBOs;
-import org.terasology.rendering.world.WorldRenderer;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.glClear;
 import static org.terasology.rendering.opengl.OpenGLUtils.renderFullscreenQuad;
 import static org.terasology.rendering.opengl.ScalingFactors.FULL_SCALE;
 
 /**
- * TODO: Add diagram of this node
+ * This nodes (or rather the shader used by it) takes advantage of the Sobel operator [1]
+ * to trace outlines (silhouette edges) of objects at some distance from the player.
+ *
+ * The resulting outlines are stored in a separate buffer the content of which is
+ * later composed over the more complete rendering of the 3d scene.
+ *
+ * [1] https://en.wikipedia.org/wiki/Sobel_operator
  */
 public class OutlineNode extends ConditionDependentNode {
-    public static final ResourceUrn OUTLINE = new ResourceUrn("engine:outline");
-
-    @In
-    private DisplayResolutionDependentFBOs displayResolutionDependentFBOs;
-
-    @In
-    private WorldRenderer worldRenderer;
-
-    @In
-    private Config config;
+    public static final ResourceUrn OUTLINE_FBO = new ResourceUrn("engine:outline");
+    public static final ResourceUrn OUTLINE_MATERIAL = new ResourceUrn("engine:prog.sobel");
 
     private RenderingConfig renderingConfig;
 
-    @Override
-    public void initialise() {
-        renderingConfig = config.getRendering();
-        renderingConfig.subscribe(renderingConfig.OUTLINE, this);
+    public OutlineNode(Context context) {
+        super(context);
+
+        renderingConfig = context.get(Config.class).getRendering();
+        renderingConfig.subscribe(RenderingConfig.OUTLINE, this);
         requiresCondition(() -> renderingConfig.isOutline());
-        requiresFBO(new FBOConfig(OUTLINE, FULL_SCALE, FBO.Type.DEFAULT), displayResolutionDependentFBOs);
-        addDesiredStateChange(new EnableMaterial("engine:prog.sobel"));
-        // TODO: verify inputs: shouldn't there be a texture binding here?
-        addDesiredStateChange(new BindFBO(OUTLINE, displayResolutionDependentFBOs));
+
+        DisplayResolutionDependentFBOs displayResolutionDependentFBOs = context.get(DisplayResolutionDependentFBOs.class);
+        requiresFBO(new FBOConfig(OUTLINE_FBO, FULL_SCALE, FBO.Type.DEFAULT), displayResolutionDependentFBOs);
+        addDesiredStateChange(new BindFbo(OUTLINE_FBO, displayResolutionDependentFBOs));
+
+        addDesiredStateChange(new EnableMaterial(OUTLINE_MATERIAL));
+
+        // TODO: Here make Material-based texture bindings explicit, using StateChanges.
+        // TODO: See for example the ApplyDeferredLightingNode as an example of setting input textures
     }
 
     /**
@@ -76,7 +76,6 @@ public class OutlineNode extends ConditionDependentNode {
     public void process() {
         PerformanceMonitor.startActivity("rendering/outline");
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // TODO: verify this is necessary
         renderFullscreenQuad();
 
         PerformanceMonitor.endActivity();

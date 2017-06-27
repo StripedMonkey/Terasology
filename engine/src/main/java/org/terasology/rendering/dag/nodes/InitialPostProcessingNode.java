@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 MovingBlocks
+ * Copyright 2017 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,58 +16,46 @@
 package org.terasology.rendering.dag.nodes;
 
 import org.terasology.assets.ResourceUrn;
-import org.terasology.config.Config;
+import org.terasology.context.Context;
 import org.terasology.monitoring.PerformanceMonitor;
-import org.terasology.registry.In;
 import org.terasology.rendering.dag.AbstractNode;
-import org.terasology.rendering.dag.stateChanges.BindFBO;
+import org.terasology.rendering.dag.stateChanges.BindFbo;
 import org.terasology.rendering.dag.stateChanges.EnableMaterial;
 import org.terasology.rendering.dag.stateChanges.SetViewportToSizeOf;
 import org.terasology.rendering.opengl.FBO;
 import org.terasology.rendering.opengl.FBOConfig;
 import static org.terasology.rendering.opengl.ScalingFactors.FULL_SCALE;
 import org.terasology.rendering.opengl.fbms.DisplayResolutionDependentFBOs;
-import org.terasology.rendering.world.WorldRenderer;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.glClear;
 import static org.terasology.rendering.opengl.OpenGLUtils.renderFullscreenQuad;
 
 /**
- * TODO: Add diagram of this node
+ * An instance of this node adds chromatic aberration (currently non-functional), light shafts,
+ * 1/8th resolution bloom and vignette onto the rendering achieved so far, stored in the gbuffer.
+ * Stores the result into the InitialPostProcessingNode.INITIAL_POST_FBO, to be used at a later stage.
  */
 public class InitialPostProcessingNode extends AbstractNode {
-    public static final ResourceUrn SCENE_PRE_POST = new ResourceUrn("engine:scenePrePost");
+    public static final ResourceUrn INITIAL_POST_FBO = new ResourceUrn("engine:fbo.initialPost");
+    public static final ResourceUrn INITIAL_POST_MATERIAL = new ResourceUrn("engine:prog.initialPost");
 
-    @In
-    private Config config;
+    public InitialPostProcessingNode(Context context) {
+        DisplayResolutionDependentFBOs displayResolutionDependentFBOs = context.get(DisplayResolutionDependentFBOs.class);
+        // TODO: see if we could write this straight into a GBUFFER - notice this FBO is used in ShaderParametersHdr
+        requiresFBO(new FBOConfig(INITIAL_POST_FBO, FULL_SCALE, FBO.Type.HDR), displayResolutionDependentFBOs);
+        addDesiredStateChange(new BindFbo(INITIAL_POST_FBO, displayResolutionDependentFBOs));
+        addDesiredStateChange(new SetViewportToSizeOf(INITIAL_POST_FBO, displayResolutionDependentFBOs));
 
-    @In
-    private DisplayResolutionDependentFBOs displayResolutionDependentFBOs;
+        addDesiredStateChange(new EnableMaterial(INITIAL_POST_MATERIAL));
 
-    @In
-    private WorldRenderer worldRenderer;
-
-    @Override
-    public void initialise() {
-        requiresFBO(new FBOConfig(SCENE_PRE_POST, FULL_SCALE, FBO.Type.HDR), displayResolutionDependentFBOs);
-
-        addDesiredStateChange(new EnableMaterial("engine:prog.prePost")); // TODO: rename shader to scenePrePost
-        // TODO: verify what the inputs are
-        addDesiredStateChange(new BindFBO(SCENE_PRE_POST, displayResolutionDependentFBOs)); // TODO: see if we could write this straight into sceneOpaque
-        addDesiredStateChange(new SetViewportToSizeOf(SCENE_PRE_POST, displayResolutionDependentFBOs));
+        // TODO: move content of ShaderParametersInitialPost to this class
     }
 
     /**
-     * Adds chromatic aberration, light shafts, 1/8th resolution bloom, vignette onto the rendering achieved so far.
-     * Stores the result into its own buffer to be used at a later stage.
+     * Renders a quad, in turn filling the InitialPostProcessingNode.INITIAL_POST_FBO.
      */
     @Override
     public void process() {
-        // Initial Post-Processing: chromatic aberration, light shafts, 1/8th resolution bloom, vignette
         PerformanceMonitor.startActivity("rendering/initialPostProcessing");
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // TODO: verify this is necessary
         renderFullscreenQuad();
 
         PerformanceMonitor.endActivity();
