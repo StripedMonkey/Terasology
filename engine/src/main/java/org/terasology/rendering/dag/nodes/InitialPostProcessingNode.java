@@ -70,15 +70,17 @@ public class InitialPostProcessingNode extends AbstractNode implements PropertyC
 
     @SuppressWarnings("FieldCanBeLocal")
     @Range(min = 0.0f, max = 0.1f)
-    private float aberrationOffsetX = 0;
+    private float aberrationOffsetX;
     @SuppressWarnings("FieldCanBeLocal")
     @Range(min = 0.0f, max = 0.1f)
-    private float aberrationOffsetY = 0;
+    private float aberrationOffsetY;
     @SuppressWarnings("FieldCanBeLocal")
     @Range(min = 0.0f, max = 1.0f)
     private float bloomFactor = 0.5f;
 
-    public InitialPostProcessingNode(Context context) {
+    public InitialPostProcessingNode(String nodeUri, Context context) {
+        super(nodeUri, context);
+
         worldProvider = context.get(WorldProvider.class);
 
         worldRenderer = context.get(WorldRenderer.class);
@@ -123,7 +125,11 @@ public class InitialPostProcessingNode extends AbstractNode implements PropertyC
      */
     @Override
     public void process() {
-        PerformanceMonitor.startActivity("rendering/initialPostProcessing");
+        PerformanceMonitor.startActivity("rendering/" + getUri());
+
+        // Common Shader Parameters
+
+        initialPostMaterial.setFloat("swimming", activeCamera.isUnderWater() ? 1.0f : 0.0f, true);
 
         // Shader Parameters
 
@@ -144,22 +150,29 @@ public class InitialPostProcessingNode extends AbstractNode implements PropertyC
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        // This method is only called when oldValue != newValue.
-        if (event.getPropertyName().equals(RenderingConfig.BLOOM)) {
-            bloomIsEnabled = renderingConfig.isBloom();
-            if (bloomIsEnabled) {
-                addDesiredStateChange(setBloomInputTexture);
-            } else {
-                removeDesiredStateChange(setBloomInputTexture);
-            }
-        } else if (event.getPropertyName().equals(RenderingConfig.LIGHT_SHAFTS)) {
-            lightShaftsAreEnabled = renderingConfig.isLightShafts();
-            if (lightShaftsAreEnabled) {
-                addDesiredStateChange(setLightShaftsInputTexture);
-            } else {
-                removeDesiredStateChange(setLightShaftsInputTexture);
-            }
-        } // else: no other cases are possible - see subscribe operations in initialize().
+        String propertyName = event.getPropertyName();
+
+        switch (propertyName) {
+            case RenderingConfig.BLOOM:
+                bloomIsEnabled = renderingConfig.isBloom();
+                if (bloomIsEnabled) {
+                    addDesiredStateChange(setBloomInputTexture);
+                } else {
+                    removeDesiredStateChange(setBloomInputTexture);
+                }
+                break;
+
+            case RenderingConfig.LIGHT_SHAFTS:
+                lightShaftsAreEnabled = renderingConfig.isLightShafts();
+                if (lightShaftsAreEnabled) {
+                    addDesiredStateChange(setLightShaftsInputTexture);
+                } else {
+                    removeDesiredStateChange(setLightShaftsInputTexture);
+                }
+                break;
+
+            // default: no other cases are possible - see subscribe operations in initialize().
+        }
 
         worldRenderer.requestTaskListRefresh();
     }

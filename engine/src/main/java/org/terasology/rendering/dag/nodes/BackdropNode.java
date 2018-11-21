@@ -60,7 +60,7 @@ import static org.lwjgl.opengl.GL11.glNewList;
  * The shader also procedurally adds a main light (sun/moon) in the form of a blurred disc.
  */
 public class BackdropNode extends AbstractNode implements WireframeCapable {
-    private final static ResourceUrn SKY_MATERIAL_URN = new ResourceUrn("engine:prog.sky");
+    private static final ResourceUrn SKY_MATERIAL_URN = new ResourceUrn("engine:prog.sky");
     private static final int SLICES = 16;
     private static final int STACKS = 128;
     private static final int RADIUS = 1024;
@@ -91,7 +91,9 @@ public class BackdropNode extends AbstractNode implements WireframeCapable {
     @SuppressWarnings("FieldCanBeLocal")
     private float turbidity;
 
-    public BackdropNode(Context context) {
+    public BackdropNode(String nodeUri, Context context) {
+        super(nodeUri, context);
+
         backdropProvider = context.get(BackdropProvider.class);
 
         worldRenderer = context.get(WorldRenderer.class);
@@ -146,7 +148,7 @@ public class BackdropNode extends AbstractNode implements WireframeCapable {
      */
     @Override
     public void process() {
-        PerformanceMonitor.startActivity("rendering/backdrop");
+        PerformanceMonitor.startActivity("rendering/" + getUri());
 
         // Common Shader Parameters
 

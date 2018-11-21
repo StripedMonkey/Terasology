@@ -84,14 +84,14 @@ public class BlockEntitySystem extends BaseComponentSystem {
 
     @ReceiveEvent(priority = EventPriority.PRIORITY_LOW)
     public void doDestroy(DoDestroyEvent event, EntityRef entity, BlockComponent blockComponent) {
-        commonDestroyed(event, entity, blockComponent.getBlock());
-        worldProvider.setBlock(blockComponent.getPosition(), blockManager.getBlock(BlockManager.AIR_ID));
+        commonDestroyed(event, entity, blockComponent.block);
+        worldProvider.setBlock(blockComponent.position, blockManager.getBlock(BlockManager.AIR_ID));
     }
 
     @ReceiveEvent(priority = EventPriority.PRIORITY_TRIVIAL)
     public void defaultDropsHandling(CreateBlockDropsEvent event, EntityRef entity, BlockComponent blockComponent) {
-        Vector3i location = blockComponent.getPosition();
-        commonDefaultDropsHandling(event, entity, location, blockComponent.getBlock());
+        Vector3i location = new Vector3i(blockComponent.position);
+        commonDefaultDropsHandling(event, entity, location, blockComponent.block);
     }
 
     @ReceiveEvent(priority = EventPriority.PRIORITY_TRIVIAL)
@@ -131,7 +131,12 @@ public class BlockEntitySystem extends BaseComponentSystem {
             entity.send(new OnBlockToItem(item));
 
             if (shouldDropToWorld(event, block, blockDamageModifierComponent, item)) {
-                processDropping(item, location, blockDamageModifierComponent.impulsePower);
+                float impulsePower = 0;
+                if (blockDamageModifierComponent != null) {
+                    impulsePower = blockDamageModifierComponent.impulsePower;
+                }
+                
+                processDropping(item, location, impulsePower);
             }
         }
     }
@@ -159,8 +164,11 @@ public class BlockEntitySystem extends BaseComponentSystem {
             // dust particle effect
             if (entity.hasComponent(LocationComponent.class) && block.isDebrisOnDestroy()) {
                 EntityBuilder dustBuilder = entityManager.newBuilder("core:dustEffect");
-                dustBuilder.getComponent(LocationComponent.class).setWorldPosition(entity.getComponent(LocationComponent.class).getWorldPosition());
-                dustBuilder.build();
+                // TODO: particle system stuff should be split out better - this is effectively a stealth dependency on Core from the engine
+                if (dustBuilder.hasComponent(LocationComponent.class)) {
+                    dustBuilder.getComponent(LocationComponent.class).setWorldPosition(entity.getComponent(LocationComponent.class).getWorldPosition());
+                    dustBuilder.build();
+                }
             }
 
             // sound to play for destroyed block

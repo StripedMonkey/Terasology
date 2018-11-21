@@ -80,4 +80,9 @@ public class WorldInfo {
     public void setWorldGenerator(SimpleUri worldGenerator) {
         this.worldGenerator = worldGenerator;
     }
+
+    @Override
+    public String toString() {
+        return title;
+    }
 }

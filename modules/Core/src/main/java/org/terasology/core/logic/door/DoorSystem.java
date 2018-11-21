@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,6 @@ import org.terasology.world.block.regions.BlockRegionComponent;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- */
 @RegisterSystem(RegisterMode.AUTHORITY)
 public class DoorSystem extends BaseComponentSystem {
     private static final Logger logger = LoggerFactory.getLogger(DoorSystem.class);
@@ -85,10 +83,10 @@ public class DoorSystem extends BaseComponentSystem {
         }
 
         Vector3f offset = new Vector3f(event.getHitPosition());
-        offset.sub(targetBlockComp.getPosition().toVector3f());
+        offset.sub(targetBlockComp.position.toVector3f());
         Side offsetDir = Side.inDirection(offset);
 
-        Vector3i primePos = new Vector3i(targetBlockComp.getPosition());
+        Vector3i primePos = new Vector3i(targetBlockComp.position);
         primePos.add(offsetDir.getVector3i());
         Block primeBlock = worldProvider.getBlock(primePos);
         if (!primeBlock.isReplacementAllowed()) {
@@ -123,8 +121,8 @@ public class DoorSystem extends BaseComponentSystem {
             closedSide = attachSide.yawClockwise(1);
         }
 
-        Block newBottomBlock = door.bottomBlockFamily.getBlockForPlacement(worldProvider, blockEntityRegistry, bottomBlockPos, closedSide, Side.TOP);
-        Block newTopBlock = door.topBlockFamily.getBlockForPlacement(worldProvider, blockEntityRegistry, bottomBlockPos, closedSide, Side.TOP);
+        Block newBottomBlock = door.bottomBlockFamily.getBlockForPlacement(bottomBlockPos, closedSide, Side.TOP);
+        Block newTopBlock = door.topBlockFamily.getBlockForPlacement(bottomBlockPos, closedSide, Side.TOP);
 
         Map<Vector3i, Block> blockMap = new HashMap<>();
         blockMap.put(bottomBlockPos, newBottomBlock);
@@ -196,9 +194,9 @@ public class DoorSystem extends BaseComponentSystem {
         DoorComponent door = entity.getComponent(DoorComponent.class);
         Side newSide = door.closedSide;
         BlockRegionComponent regionComp = entity.getComponent(BlockRegionComponent.class);
-        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(worldProvider, blockEntityRegistry, regionComp.region.min(), newSide, Side.TOP);
+        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(regionComp.region.min(), newSide, Side.TOP);
         worldProvider.setBlock(regionComp.region.min(), bottomBlock);
-        Block topBlock = door.topBlockFamily.getBlockForPlacement(worldProvider, blockEntityRegistry, regionComp.region.max(), newSide, Side.TOP);
+        Block topBlock = door.topBlockFamily.getBlockForPlacement(regionComp.region.max(), newSide, Side.TOP);
         worldProvider.setBlock(regionComp.region.max(), topBlock);
         if (door.closeSound != null) {
             entity.send(new PlaySoundEvent(door.closeSound, 1f));
@@ -213,9 +211,9 @@ public class DoorSystem extends BaseComponentSystem {
         DoorComponent door = entity.getComponent(DoorComponent.class);
         Side newSide = door.openSide;
         BlockRegionComponent regionComp = entity.getComponent(BlockRegionComponent.class);
-        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(worldProvider, blockEntityRegistry, regionComp.region.min(), newSide, Side.TOP);
+        Block bottomBlock = door.bottomBlockFamily.getBlockForPlacement(regionComp.region.min(), newSide, Side.TOP);
         worldProvider.setBlock(regionComp.region.min(), bottomBlock);
-        Block topBlock = door.topBlockFamily.getBlockForPlacement(worldProvider, blockEntityRegistry, regionComp.region.max(), newSide, Side.TOP);
+        Block topBlock = door.topBlockFamily.getBlockForPlacement(regionComp.region.max(), newSide, Side.TOP);
         worldProvider.setBlock(regionComp.region.max(), topBlock);
         if (door.openSound != null) {
             entity.send(new PlaySoundEvent(door.openSound, 1f));

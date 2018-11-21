@@ -112,9 +112,9 @@ public final class RenderTaskListGenerator {
 
         for (Node node : orderedNodes) {
             if (node.isEnabled()) {
-                if (logger.isInfoEnabled()) {
+                if (logger.isDebugEnabled()) {
                     // Marker tasks just add a dividing line to the logger output
-                    taskList.add(new MarkerTask(node.getClass().getSimpleName()));
+                    taskList.add(new MarkerTask(node.getUri() + " (" + node.getClass().getSimpleName() + ")"));
                     enabledNodes++; // we count them only for statistical purposes
                     potentialTasks += 2 * node.getDesiredStateChanges().size() + 1;
                 }
@@ -180,16 +180,16 @@ public final class RenderTaskListGenerator {
 
         long endTimeInNanoSeconds = System.nanoTime();
 
-        if (logger.isInfoEnabled()) {
-            logger.info("===== INTERMEDIATE RENDERER LIST =========================");
+        if (logger.isDebugEnabled()) {
+            logger.debug("===== INTERMEDIATE RENDERER LIST =========================");
             logIntermediateRendererListForDebugging(orderedNodes);
-            logger.info("===== RENDERER TASK LIST =================================");
+            logger.debug("===== RENDERER TASK LIST =================================");
             logList(taskList);
-            logger.info("----------------------------------------------------------");
-            logger.info(String.format("Task list generated in %.3f ms", (endTimeInNanoSeconds - startTimeInNanoSeconds) / 1000000f));
-            logger.info(String.format("%s nodes, %s enabled - %s tasks (excluding marker tasks) out of %s potential tasks.",
+            logger.debug("----------------------------------------------------------");
+            logger.debug(String.format("Task list generated in %.3f ms", (endTimeInNanoSeconds - startTimeInNanoSeconds) / 1000000f));
+            logger.debug(String.format("%s nodes, %s enabled - %s tasks (excluding marker tasks) out of %s potential tasks.",
                     nodeList.size(), enabledNodes, taskList.size() - enabledNodes, potentialTasks));
-            logger.info("----------------------------------------------------------");
+            logger.debug("----------------------------------------------------------");
         }
 
         return taskList;
@@ -197,7 +197,7 @@ public final class RenderTaskListGenerator {
 
     private void logList(List<?> list) {
         for (Object object : list) {
-            logger.info(object.toString());
+            logger.debug(object.toString());
         }
     }
 
@@ -219,7 +219,7 @@ public final class RenderTaskListGenerator {
      * Instances of this class are intended to be inserted in the Render Task List.
      *
      * If the content of the task list is printed out by the logger, instances of this class
-     * visually separate the tasks releated to a node from those of the previous one.
+     * visually separate the tasks related to a node from those of the previous one.
      */
     private class MarkerTask implements RenderPipelineTask {
 

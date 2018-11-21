@@ -1,0 +1,107 @@
+{
+  "type": "engine:StartPlayingScreen",
+  "skin": "engine:mainMenu",
+  "contents": {
+    "type": "relativeLayout",
+    "contents": [
+      {
+        "type": "UILabel",
+        "id": "title",
+        "family": "title",
+        "text": "${engine:menu#start-playing}",
+        "layoutInfo": {
+          "height": 48,
+          "position-horizontal-center": {},
+          "position-top": {
+            "target": "TOP",
+            "offset": 48
+          }
+        }
+      },
+      {
+        "type": "UIBox",
+        "id": "container",
+        "layoutInfo": {
+          "width": 400,
+          "position-horizontal-center": {},
+          "position-top": {
+            "target": "BOTTOM",
+            "offset": 16,
+            "widget": "title"
+          },
+          "position-bottom": {
+            "target": "TOP",
+            "widget": "close",
+            "offset": 16
+          }
+        }
+      },
+      {
+        "type": "ColumnLayout",
+        "columns": 1,
+        "horizontalSpacing": 8,
+        "layoutInfo": {
+          "width": 384,
+          "position-horizontal-center": {},
+          "position-top": {
+            "target": "TOP",
+            "widget": "container",
+            "offset": 8
+          },
+          "position-bottom": {
+            "target": "TOP",
+            "widget": "close",
+            "offset": 24
+          }
+        },
+        "contents": [
+          {
+            "type": "UIImage",
+            "skin": "framed_image",
+            "id": "preview"
+          }
+        ]
+      },
+      {
+        "type": "UISpace",
+        "id": "close",
+        "layoutInfo": {
+          "width": 128,
+          "height": 32,
+          "position-horizontal-center": {},
+          "position-bottom": {
+            "target": "BOTTOM",
+            "offset": 48
+          }
+        }
+      },
+      {
+        "type": "RowLayout",
+        "id": "actionsRow",
+        "horizontalSpacing": 4,
+        "contents": [
+          {
+            "type": "UIButton",
+            "text": "${engine:menu#back}",
+            "id": "close"
+          },
+          {
+            "type": "UIButton",
+            "text": "${engine:menu#start-game}",
+            "id": "play"
+          }
+        ],
+        "layoutInfo": {
+          "width": 400,
+          "height": 32,
+          "position-horizontal-center": {},
+          "position-bottom": {
+            "target": "BOTTOM",
+            "offset": -48,
+            "widget": "container"
+          }
+        }
+      }
+    ]
+  }
+}

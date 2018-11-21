@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.assets.Asset;
 import org.terasology.config.Config;
+import org.terasology.config.SystemConfig;
 import org.terasology.engine.TerasologyConstants;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.module.ClasspathModule;
@@ -36,9 +37,10 @@ import org.terasology.module.sandbox.APIScanner;
 import org.terasology.module.sandbox.BytecodeInjector;
 import org.terasology.module.sandbox.ModuleSecurityManager;
 import org.terasology.module.sandbox.ModuleSecurityPolicy;
+import org.terasology.module.sandbox.PermissionProviderFactory;
 import org.terasology.module.sandbox.StandardPermissionProviderFactory;
+import org.terasology.module.sandbox.WarnOnlyProviderFactory;
 import org.terasology.naming.Name;
-
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -50,8 +52,10 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Policy;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,6 +63,7 @@ import java.util.stream.Collectors;
 public class ModuleManagerImpl implements ModuleManager {
     private static final Logger logger = LoggerFactory.getLogger(ModuleManagerImpl.class);
     private StandardPermissionProviderFactory permissionProviderFactory = new StandardPermissionProviderFactory();
+    private PermissionProviderFactory wrappingPermissionProviderFactory = new WarnOnlyProviderFactory(permissionProviderFactory);
 
     private ModuleRegistry registry;
     private ModuleEnvironment environment;
@@ -66,14 +71,27 @@ public class ModuleManagerImpl implements ModuleManager {
     private ModuleInstallManager installManager;
 
     public ModuleManagerImpl(String masterServerAddress) {
+        this(masterServerAddress, Collections.emptyList());
+    }
+
+    public ModuleManagerImpl(String masterServerAddress, List<Class<?>> classesOnClasspathsToAddToEngine) {
         metadataReader = new ModuleMetadataJsonAdapter();
         for (ModuleExtension ext : StandardModuleExtension.values()) {
+            metadataReader.registerExtension(ext.getKey(), ext.getValueType());
+        }
+        for (ModuleExtension ext : ExtraDataModuleExtension.values()) {
             metadataReader.registerExtension(ext.getKey(), ext.getValueType());
         }
         Module engineModule;
         try (Reader reader = new InputStreamReader(getClass().getResourceAsStream("/engine-module.txt"), TerasologyConstants.CHARSET)) {
             ModuleMetadata metadata = metadataReader.read(reader);
-            engineModule = ClasspathModule.create(metadata, getClass(), Module.class, Asset.class);
+            List<Class<?>> additionalClassesList = new ArrayList<>(classesOnClasspathsToAddToEngine.size() + 2);
+            additionalClassesList.add(Module.class); // provide access to gestalt-module.jar
+            additionalClassesList.add(Asset.class); // provide access to gestalt-asset-core.jar
+            additionalClassesList.addAll(classesOnClasspathsToAddToEngine); // provide access to any facade-provided classes
+            Class<?>[] additionalClassesArray = new Class[additionalClassesList.size()];
+            additionalClassesArray = additionalClassesList.toArray(additionalClassesArray);
+            engineModule = ClasspathModule.create(metadata, getClass(), additionalClassesArray);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read engine metadata", e);
         } catch (URISyntaxException e) {
@@ -102,7 +120,11 @@ public class ModuleManagerImpl implements ModuleManager {
     }
 
     public ModuleManagerImpl(Config config) {
-        this(config.getNetwork().getMasterServer());
+        this(config, Collections.emptyList());
+    }
+
+    public ModuleManagerImpl(Config config, List<Class<?>> classesOnClasspathsToAddToEngine) {
+        this(config.getNetwork().getMasterServer(), classesOnClasspathsToAddToEngine);
     }
 
     /**
@@ -129,8 +151,7 @@ public class ModuleManagerImpl implements ModuleManager {
                     continue;
                 }
 
-                try {
-                    Reader reader = new InputStreamReader(url.openStream(), TerasologyConstants.CHARSET);
+                try (Reader reader = new InputStreamReader(url.openStream(), TerasologyConstants.CHARSET)) {
                     ModuleMetadata metaData = metadataReader.read(reader);
                     String displayName = metaData.getDisplayName().toString();
                     Name id = metaData.getId();
@@ -195,7 +216,13 @@ public class ModuleManagerImpl implements ModuleManager {
     public ModuleEnvironment loadEnvironment(Set<Module> modules, boolean asPrimary) {
         Set<Module> finalModules = Sets.newLinkedHashSet(modules);
         finalModules.addAll(registry.stream().filter(Module::isOnClasspath).collect(Collectors.toList()));
-        ModuleEnvironment newEnvironment = new ModuleEnvironment(finalModules, permissionProviderFactory, Collections.<BytecodeInjector>emptyList());
+        ModuleEnvironment newEnvironment;
+        boolean permissiveSecurityEnabled = Boolean.parseBoolean(System.getProperty(SystemConfig.PERMISSIVE_SECURITY_ENABLED_PROPERTY));
+        if (permissiveSecurityEnabled) {
+            newEnvironment = new ModuleEnvironment(finalModules, wrappingPermissionProviderFactory, Collections.<BytecodeInjector>emptyList());
+        } else {
+            newEnvironment = new ModuleEnvironment(finalModules, permissionProviderFactory, Collections.<BytecodeInjector>emptyList());
+        }
         if (asPrimary) {
             environment = newEnvironment;
         }

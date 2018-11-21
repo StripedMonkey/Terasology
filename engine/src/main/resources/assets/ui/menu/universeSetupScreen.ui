@@ -1,0 +1,181 @@
+{
+  "type": "UniverseSetupScreen",
+  "skin": "engine:mainMenu",
+  "contents": {
+    "type": "relativeLayout",
+    "contents": [
+      {
+        "type": "UILabel",
+        "id": "title",
+        "family": "title",
+        "text": "${engine:menu#universe-setup}",
+        "layoutInfo": {
+          "height": 48,
+          "position-horizontal-center": {},
+          "position-top": {
+            "target": "TOP",
+            "offset": 48
+          }
+        }
+      },
+      {
+        "type": "UIBox",
+        "id":"mainBox",
+        "content": {
+          "type": "ColumnLayout",
+          "columns": 1,
+          "verticalSpacing": 4,
+          "horizontalSpacing": 4,
+          "contents": [
+            {
+              "type": "UILabel",
+              "text": "Pick a world generator and add it. Then select and configure worlds from the freshly filled Worlds dropdown"
+            },
+            {
+              "type": "UILabel",
+              "text": "${engine:menu#game-world-generators}:",
+              "family": "left-label"
+            },
+            {
+              "type": "RowLayout",
+              "horizontalSpacing": 4,
+              "contents": [
+                {
+                  "type": "UIDropdownScrollable",
+                  "id": "worldGenerators",
+                  "layoutInfo": {
+                    "relativeWidth": 0.50
+                  }
+                },
+                {
+                  "type": "UISpace",
+                  "size": [
+                    1,
+                    8
+                  ]
+                },
+                {
+                  "type": "UIButton",
+                  "id": "addGenerator",
+                  "text": "${engine:menu#add}",
+                  "layoutInfo": {
+                    "relativeWidth": 0.30
+                  }
+                },
+                {
+                  "type": "UISpace",
+                  "size": [
+                    1,
+                    8
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "UISpace",
+              "size": [
+                1,
+                8
+              ]
+            },
+            {
+              "type": "UILabel",
+              "text": "${engine:menu#game-worlds}:",
+              "family": "left-label"
+            },
+            {
+              "type": "RowLayout",
+              "horizontalSpacing": 4,
+              "contents": [
+                {
+                  "type": "UIDropdownScrollable",
+                  "id": "worlds",
+                  "layoutInfo": {
+                    "relativeWidth": 0.50
+                  }
+                },
+                {
+                  "type": "UISpace",
+                  "size": [
+                    1,
+                    8
+                  ]
+                },
+                {
+                  "type": "UIButton",
+                  "id": "worldConfig",
+                  "text": "${engine:menu#config}",
+                  "layoutInfo": {
+                    "relativeWidth": 0.30
+                  }
+                },
+                {
+                  "type": "UISpace",
+                  "size": [
+                    1,
+                    8
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "layoutInfo": {
+          "width": 500,
+          "use-content-height": true,
+          "position-horizontal-center": {},
+          "position-top": {
+            "target": "BOTTOM",
+            "widget": "title"
+          },
+          "position-bottom": {
+            "target": "BOTTOM"
+          }
+        }
+      },
+      {
+        "type": "RowLayout",
+        "id": "actionsRow",
+        "horizontalSpacing": 4,
+        "contents": [
+          {
+            "type": "UIButton",
+            "text": "${engine:menu#continue}",
+            "id": "continue"
+          },
+          {
+            "type": "UIButton",
+            "text": "${engine:menu#start-game}",
+            "id": "play",
+            "enabled": false
+          }
+        ],
+        "layoutInfo": {
+          "width": 400,
+          "height": 32,
+          "position-horizontal-center": {},
+          "position-top": {
+            "target": "BOTTOM",
+            "offset": 16,
+            "widget": "mainBox"
+          }
+        }
+      },
+      {
+        "type": "UIButton",
+        "text": "${engine:menu#back}",
+        "id": "close",
+        "layoutInfo": {
+          "width": 128,
+          "height": 32,
+          "position-horizontal-center": {},
+          "position-top": {
+            "target": "BOTTOM",
+            "offset": 16,
+            "widget": "actionsRow"
+          }
+        }
+      }
+    ]
+  }
+}

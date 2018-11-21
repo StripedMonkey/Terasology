@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,18 +36,21 @@ import org.terasology.engine.modes.loadProcesses.InitialiseComponentSystemManage
 import org.terasology.engine.modes.loadProcesses.InitialiseEntitySystem;
 import org.terasology.engine.modes.loadProcesses.InitialiseGraphics;
 import org.terasology.engine.modes.loadProcesses.InitialisePhysics;
+import org.terasology.engine.modes.loadProcesses.InitialiseRecordAndReplay;
 import org.terasology.engine.modes.loadProcesses.InitialiseRemoteWorld;
 import org.terasology.engine.modes.loadProcesses.InitialiseSystems;
 import org.terasology.engine.modes.loadProcesses.InitialiseWorld;
 import org.terasology.engine.modes.loadProcesses.InitialiseWorldGenerator;
 import org.terasology.engine.modes.loadProcesses.JoinServer;
 import org.terasology.engine.modes.loadProcesses.LoadEntities;
+import org.terasology.engine.modes.loadProcesses.LoadExtraBlockData;
 import org.terasology.engine.modes.loadProcesses.LoadPrefabs;
 import org.terasology.engine.modes.loadProcesses.PostBeginSystems;
 import org.terasology.engine.modes.loadProcesses.PreBeginSystems;
 import org.terasology.engine.modes.loadProcesses.PrepareWorld;
 import org.terasology.engine.modes.loadProcesses.ProcessBlockPrefabs;
 import org.terasology.engine.modes.loadProcesses.RegisterBiomes;
+import org.terasology.engine.modes.loadProcesses.RegisterBlockFamilies;
 import org.terasology.engine.modes.loadProcesses.RegisterBlocks;
 import org.terasology.engine.modes.loadProcesses.RegisterInputSystem;
 import org.terasology.engine.modes.loadProcesses.RegisterMods;
@@ -59,7 +62,6 @@ import org.terasology.game.Game;
 import org.terasology.game.GameManifest;
 import org.terasology.network.JoinStatus;
 import org.terasology.network.NetworkMode;
-import org.terasology.network.NetworkSystem;
 import org.terasology.registry.CoreRegistry;
 import org.terasology.rendering.nui.NUIManager;
 import org.terasology.rendering.nui.internal.CanvasRenderer;
@@ -68,8 +70,6 @@ import org.terasology.rendering.nui.layers.mainMenu.loadingScreen.LoadingScreen;
 
 import java.util.Queue;
 
-/**
- */
 public class StateLoading implements GameState {
 
     private static final Logger logger = LoggerFactory.getLogger(StateLoading.class);
@@ -90,9 +90,6 @@ public class StateLoading implements GameState {
 
     /**
      * Constructor for server or single player games
-     *
-     * @param gameManifest
-     * @param netMode
      */
     public StateLoading(GameManifest gameManifest, NetworkMode netMode) {
         Preconditions.checkArgument(netMode != NetworkMode.CLIENT);
@@ -103,8 +100,6 @@ public class StateLoading implements GameState {
 
     /**
      * Constructor for client of multiplayer game
-     *
-     * @param joinStatus
      */
     public StateLoading(JoinStatus joinStatus) {
         this.gameManifest = new GameManifest();
@@ -155,6 +150,7 @@ public class StateLoading implements GameState {
         loadProcesses.add(new CacheBlocks(context));
         loadProcesses.add(new LoadPrefabs(context));
         loadProcesses.add(new ProcessBlockPrefabs(context));
+        loadProcesses.add(new LoadExtraBlockData(context));
         loadProcesses.add(new InitialiseComponentSystemManager(context));
         loadProcesses.add(new RegisterInputSystem(context));
         loadProcesses.add(new RegisterSystems(context, netMode));
@@ -167,6 +163,7 @@ public class StateLoading implements GameState {
         loadProcesses.add(new PostBeginSystems(context));
         loadProcesses.add(new SetupRemotePlayer(context));
         loadProcesses.add(new AwaitCharacterSpawn(context));
+        loadProcesses.add(new RegisterBlockFamilies(context));
         loadProcesses.add(new PrepareWorld(context));
     }
 
@@ -184,15 +181,18 @@ public class StateLoading implements GameState {
         loadProcesses.add(new RegisterInputSystem(context));
         loadProcesses.add(new RegisterSystems(context, netMode));
         loadProcesses.add(new InitialiseCommandSystem(context));
+        loadProcesses.add(new LoadExtraBlockData(context));
         loadProcesses.add(new InitialiseWorld(gameManifest, context));
+        loadProcesses.add(new RegisterBlockFamilies(context));
         loadProcesses.add(new EnsureSaveGameConsistency(context));
         loadProcesses.add(new InitialisePhysics(context));
         loadProcesses.add(new InitialiseSystems(context));
         loadProcesses.add(new PreBeginSystems(context));
         loadProcesses.add(new LoadEntities(context));
         loadProcesses.add(new InitialiseBlockTypeEntities(context));
-        loadProcesses.add(new CreateWorldEntity(context));
+        loadProcesses.add(new CreateWorldEntity(context, gameManifest));
         loadProcesses.add(new InitialiseWorldGenerator(context));
+        loadProcesses.add(new InitialiseRecordAndReplay(context));
         if (netMode.isServer()) {
             boolean dedicated;
             if (netMode == NetworkMode.DEDICATED_SERVER) {

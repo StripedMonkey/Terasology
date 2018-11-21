@@ -16,18 +16,16 @@
 package org.terasology.telemetry.metrics;
 
 import com.snowplowanalytics.snowplow.tracker.events.Unstructured;
-import com.snowplowanalytics.snowplow.tracker.payload.SelfDescribingJson;
 import org.lwjgl.opengl.GL11;
 import org.terasology.config.Config;
-import org.terasology.config.TelemetryConfig;
 import org.terasology.context.Context;
 import org.terasology.engine.subsystem.DisplayDevice;
 import org.terasology.registry.CoreRegistry;
 import org.terasology.telemetry.TelemetryCategory;
 import org.terasology.telemetry.TelemetryField;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * This is a metric for system context.
@@ -79,7 +77,6 @@ public final class SystemContextMetric extends Metric {
     private long memoryMaxByte;
 
     public SystemContextMetric(Context context) {
-
         bindingMap = context.get(Config.class).getTelemetryConfig().getMetricsUserPermissionConfig().getBindingMap();
 
         osName = System.getProperty("os.name");
@@ -105,14 +102,9 @@ public final class SystemContextMetric extends Metric {
     }
 
     @Override
-    public Unstructured getUnstructuredMetric() {
-
-        getFieldValueMap();
-        Map<String, ?> filteredMetricMap = filterMetricMap(bindingMap);
-        SelfDescribingJson systemContextData = new SelfDescribingJson(SCHEMA_OS, filteredMetricMap);
-
-        return Unstructured.builder()
-                .eventData(systemContextData)
-                .build();
+    public Optional<Unstructured> getUnstructuredMetric() {
+        createTelemetryFieldToValue();
+        Map<String, Object> filteredMetricMap = filterMetricMap(bindingMap);
+        return getUnstructuredMetric(SCHEMA_OS, filteredMetricMap);
     }
 }

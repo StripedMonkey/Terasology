@@ -61,7 +61,7 @@ import static org.terasology.rendering.opengl.ScalingFactors.HALF_SCALE;
  */
 public class BackdropReflectionNode extends AbstractNode {
     public static final SimpleUri REFLECTED_FBO_URI = new SimpleUri("engine:fbo.sceneReflected");
-    private final static ResourceUrn SKY_MATERIAL_URN = new ResourceUrn("engine:prog.sky");
+    private static final ResourceUrn SKY_MATERIAL_URN = new ResourceUrn("engine:prog.sky");
     private static final int RADIUS = 1024;
     private static final int SLICES = 16;
     private static final int STACKS = 128;
@@ -97,7 +97,9 @@ public class BackdropReflectionNode extends AbstractNode {
      *
      * This method also requests the material using the "sky" shaders (vertex, fragment) to be enabled.
      */
-    public BackdropReflectionNode(Context context) {
+    public BackdropReflectionNode(String nodeUri, Context context) {
+        super(nodeUri, context);
+
         backdropProvider = context.get(BackdropProvider.class);
 
         SubmersibleCamera activeCamera = context.get(WorldRenderer.class).getActiveCamera();
@@ -129,7 +131,7 @@ public class BackdropReflectionNode extends AbstractNode {
      */
     @Override
     public void process() {
-        PerformanceMonitor.startActivity("rendering/reflectedBackdropNode");
+        PerformanceMonitor.startActivity("rendering/" + getUri());
 
         // Common Shader Parameters
 

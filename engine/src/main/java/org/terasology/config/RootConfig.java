@@ -31,6 +31,7 @@ public final class RootConfig {
     private PlayerConfig player = new PlayerConfig();
     private PermissionConfig permission = new PermissionConfig();
     private InputConfig input = new InputConfig();
+    private BindsConfig binds = new BindsConfig();
     private AudioConfig audio = new AudioConfig();
     private RenderingConfig rendering = new RenderingConfig();
     private ModuleConfig defaultModSelection = new ModuleConfig();
@@ -42,6 +43,8 @@ public final class RootConfig {
     private SelectModulesConfig selectModulesConfig = new SelectModulesConfig();
     private IdentityStorageServiceConfig identityStorageService = new IdentityStorageServiceConfig();
     private TelemetryConfig telemetryConfig = new TelemetryConfig();
+    private UniverseConfig universeConfig = new UniverseConfig();
+    private WebBrowserConfig webBrowserConfig = new WebBrowserConfig();
 
     /**
      * Create a new, empty config
@@ -53,11 +56,12 @@ public final class RootConfig {
         return permission;
     }
 
-    /**
-     * @return Input configuration (mostly binds)
-     */
     public InputConfig getInput() {
         return input;
+    }
+
+    public BindsConfig getBinds() {
+        return binds;
     }
 
     public ModuleConfig getDefaultModSelection() {
@@ -110,5 +114,13 @@ public final class RootConfig {
 
     public Map<SimpleUri, Map<String, JsonElement>> getModuleConfigs() {
         return moduleConfigs;
+    }
+
+    public UniverseConfig getUniverseConfig() {
+        return universeConfig;
+    }
+
+    public WebBrowserConfig getWebBrowserConfig() {
+        return webBrowserConfig;
     }
 }

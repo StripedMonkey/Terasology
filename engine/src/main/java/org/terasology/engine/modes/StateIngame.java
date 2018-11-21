@@ -15,8 +15,6 @@
  */
 package org.terasology.engine.modes;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.audio.AudioManager;
 import org.terasology.config.Config;
 import org.terasology.context.Context;
@@ -56,8 +54,6 @@ import java.util.Collections;
  * @version 0.1
  */
 public class StateIngame implements GameState {
-
-    private static final Logger logger = LoggerFactory.getLogger(StateIngame.class);
 
     private ComponentSystemManager componentSystemManager;
     private EventSystem eventSystem;
@@ -150,7 +146,7 @@ public class StateIngame implements GameState {
         ModuleEnvironment oldEnvironment = context.get(ModuleManager.class).getEnvironment();
         context.get(ModuleManager.class).loadEnvironment(Collections.<Module>emptySet(), true);
         if (!shuttingDown) {
-            context.get(EnvironmentSwitchHandler.class).handleSwitchToEmptyEnivronment(context);
+            context.get(EnvironmentSwitchHandler.class).handleSwitchToEmptyEnvironment(context);
         }
         if (oldEnvironment != null) {
             oldEnvironment.close();
@@ -230,7 +226,7 @@ public class StateIngame implements GameState {
         return gameManifest.getTitle();
     }
 
-    public void renderUserInterface() {
+    private void renderUserInterface() {
         PerformanceMonitor.startActivity("Rendering NUI");
         nuiManager.render();
         PerformanceMonitor.endActivity();
@@ -244,7 +240,7 @@ public class StateIngame implements GameState {
         pauseGame = true;
     }
 
-    public void unpause() {
+    private void unpause() {
         pauseGame = false;
     }
 

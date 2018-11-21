@@ -40,7 +40,7 @@ import org.terasology.rendering.opengl.SwappableFBO;
  * debugging it's easy to see where the swap occurs.
  */
 public class SwapGBuffers implements StateChange {
-    private static StateChange defaultInstance = null;
+    private static StateChange defaultInstance;
 
     public SwapGBuffers(SwappableFBO gBufferPair) {
         gBufferPair.swap();
@@ -51,11 +51,14 @@ public class SwapGBuffers implements StateChange {
         return defaultInstance;
     }
 
-    // TODO: Add .hashCode()
-
     @Override
     public boolean equals(Object obj) {
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return SwapGBuffers.class.hashCode();
     }
 
     @Override

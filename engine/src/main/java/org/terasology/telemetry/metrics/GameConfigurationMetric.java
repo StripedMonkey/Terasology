@@ -16,20 +16,17 @@
 package org.terasology.telemetry.metrics;
 
 import com.snowplowanalytics.snowplow.tracker.events.Unstructured;
-import com.snowplowanalytics.snowplow.tracker.payload.SelfDescribingJson;
 import org.terasology.config.Config;
 import org.terasology.config.PlayerConfig;
 import org.terasology.context.Context;
-import org.terasology.engine.SimpleUri;
-import org.terasology.network.NetworkMode;
 import org.terasology.network.NetworkSystem;
 import org.terasology.registry.CoreRegistry;
 import org.terasology.telemetry.TelemetryCategory;
 import org.terasology.telemetry.TelemetryField;
 import org.terasology.world.generator.WorldGenerator;
 
-import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A metric tracking game configuration such as world generator, network mode,etc.
@@ -67,23 +64,19 @@ public final class GameConfigurationMetric extends Metric {
     }
 
     @Override
-    public Unstructured getUnstructuredMetric() {
-        getFieldValueMap();
-        Map filteredMetricMap = filterMetricMap(bindingMap);
-        SelfDescribingJson modulesData = new SelfDescribingJson(SCHEMA_GAME_CONFIGURATION, filteredMetricMap);
-
-        return Unstructured.builder()
-                .eventData(modulesData)
-                .build();
+    public Optional<Unstructured> getUnstructuredMetric() {
+        createTelemetryFieldToValue();
+        Map<String, Object> filteredMetricMap = filterMetricMap(bindingMap);
+        return getUnstructuredMetric(SCHEMA_GAME_CONFIGURATION, filteredMetricMap);
     }
 
     @Override
-    public Map<String, ?> getFieldValueMap() {
+    public Map<String, ?> createTelemetryFieldToValue() {
         fetchWorldGenerator();
         fetchNetworkMode();
         fetchConfig();
 
-        return super.getFieldValueMap();
+        return super.createTelemetryFieldToValue();
     }
 
     private void fetchWorldGenerator() {

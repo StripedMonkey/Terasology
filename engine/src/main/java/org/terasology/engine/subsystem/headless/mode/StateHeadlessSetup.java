@@ -42,6 +42,8 @@ import org.terasology.module.Module;
 import org.terasology.naming.Name;
 import org.terasology.network.ClientComponent;
 import org.terasology.network.NetworkMode;
+import org.terasology.recording.DirectionAndOriginPosRecorderList;
+import org.terasology.recording.RecordAndReplayCurrentStatus;
 import org.terasology.registry.CoreRegistry;
 import org.terasology.rendering.nui.NUIManager;
 import org.terasology.rendering.nui.internal.CanvasRenderer;
@@ -91,12 +93,13 @@ public class StateHeadlessSetup implements GameState {
 
         EntityRef localPlayerEntity = entityManager.create(new ClientComponent());
         LocalPlayer localPlayer = new LocalPlayer();
+        localPlayer.setRecordAndReplayClasses(context.get(DirectionAndOriginPosRecorderList.class), context.get(RecordAndReplayCurrentStatus.class));
         context.put(LocalPlayer.class, localPlayer);
         localPlayer.setClientEntity(localPlayerEntity);
 
         componentSystemManager.initialise();
 
-        GameManifest gameManifest = null;
+        GameManifest gameManifest;
         List<GameInfo> savedGames = GameProvider.getSavedGames();
         if (savedGames.size() > 0) {
             gameManifest = savedGames.get(0).getManifest();
@@ -137,9 +140,8 @@ public class StateHeadlessSetup implements GameState {
 
         gameManifest.setTitle(worldGenConfig.getWorldTitle());
         gameManifest.setSeed(worldGenConfig.getDefaultSeed());
-
         WorldInfo worldInfo = new WorldInfo(TerasologyConstants.MAIN_WORLD, gameManifest.getSeed(),
-                (long) (WorldTime.DAY_LENGTH * 0.025f), worldGeneratorUri);
+                (long) (WorldTime.DAY_LENGTH * WorldTime.NOON_OFFSET), worldGeneratorUri);
         gameManifest.addWorld(worldInfo);
         return gameManifest;
     }
