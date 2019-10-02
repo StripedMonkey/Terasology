@@ -15,6 +15,8 @@
  */
 package org.terasology.engine.subsystem.headless.mode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.config.Config;
 import org.terasology.config.WorldGenerationConfig;
 import org.terasology.context.Context;
@@ -61,6 +63,8 @@ import java.util.List;
  */
 public class StateHeadlessSetup implements GameState {
 
+    private static final Logger logger = LoggerFactory.getLogger(StateHeadlessSetup.class);
+
     private EngineEntityManager entityManager;
     private EventSystem eventSystem;
     private ComponentSystemManager componentSystemManager;
@@ -106,6 +110,13 @@ public class StateHeadlessSetup implements GameState {
         } else {
             gameManifest = createGameManifest();
         }
+
+        Config config = context.get(Config.class);
+        WorldInfo worldInfo = gameManifest.getWorldInfo(TerasologyConstants.MAIN_WORLD);
+        config.getUniverseConfig().addWorldManager(worldInfo);
+        config.getUniverseConfig().setSpawnWorldTitle(worldInfo.getTitle());
+        config.getUniverseConfig().setUniverseSeed(gameManifest.getSeed());
+
         gameEngine.changeState(new StateLoading(gameManifest, NetworkMode.LISTEN_SERVER));
     }
 
@@ -118,6 +129,8 @@ public class StateHeadlessSetup implements GameState {
             Module module = moduleManager.getRegistry().getLatestModuleVersion(moduleName);
             if (module != null) {
                 gameManifest.addModule(module.getId(), module.getVersion());
+            } else {
+                logger.warn("ModuleRegistry has no latest version for module {}", moduleName);
             }
         }
 
@@ -140,7 +153,7 @@ public class StateHeadlessSetup implements GameState {
 
         gameManifest.setTitle(worldGenConfig.getWorldTitle());
         gameManifest.setSeed(worldGenConfig.getDefaultSeed());
-        WorldInfo worldInfo = new WorldInfo(TerasologyConstants.MAIN_WORLD, gameManifest.getSeed(),
+        WorldInfo worldInfo = new WorldInfo(TerasologyConstants.MAIN_WORLD, worldGenConfig.getWorldTitle(), gameManifest.getSeed(),
                 (long) (WorldTime.DAY_LENGTH * WorldTime.NOON_OFFSET), worldGeneratorUri);
         gameManifest.addWorld(worldInfo);
         return gameManifest;

@@ -8,7 +8,8 @@
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/MovingBlocks/Terasology.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MovingBlocks/Terasology/context:java)
 [![License(code)](https://img.shields.io/badge/license(code)-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![License(art)](https://img.shields.io/badge/license(art)-CC%20BY%204.0-blue.svg)](http://creativecommons.org/licenses/by/4.0/)
-[![IRC Channel](https://img.shields.io/badge/irc-%23terasology-blue.svg "IRC Channel")](https://webchat.freenode.net/?channels=terasology)
+[![Discord](https://img.shields.io/discord/270264625419911192.svg?label=discord)](http://discord.gg/Terasology)
+[![IRC Channel](https://img.shields.io/badge/irc-%23terasology-blue.svg "IRC (Outdated)")](https://webchat.freenode.net/?channels=terasology)
 
 Welcome!
 
@@ -18,7 +19,7 @@ The [creators and maintainers](https://github.com/MovingBlocks/Terasology/blob/d
 
 Terasology is fully [open source](https://github.com/MovingBlocks/Terasology) and licensed [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) for code and [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/) for artwork (unless indicated otherwise - see [credits](docs/Credits.md) for minor exceptions)
 
-We encourage contributions from anybody and try to keep a warm and friendly community and maintain a [code of conduct](https://github.com/MovingBlocks/Terasology/blob/develop/docs/Conduct.md)
+We encourage contributions from anybody and try to keep a warm and friendly community and maintain a [code of conduct](https://github.com/MovingBlocks/Terasology/blob/develop/docs/CODE_OF_CONDUCT.md)
 
 ![Terasology](/docs/images/menuBackground.jpg "Terasology")
 
@@ -49,7 +50,7 @@ For more on developing/modding see the [wiki](https://github.com/MovingBlocks/Te
 ## Links
 
 * [Game Credits](docs/Credits.md)
-* [Code of Conduct](docs/Conduct.md)
+* [Code of Conduct](docs/CODE_OF_CONDUCT.md)
 * [Playing](docs/Playing.md)
 * [Modules](docs/Modules.md)
 * [Developing](https://github.com/MovingBlocks/Terasology/wiki)

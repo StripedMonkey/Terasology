@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 MovingBlocks
+ * Copyright 2019 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,10 @@ import org.terasology.world.time.WorldTime;
  */
 public class GameManifestProvider {
 
+    private static final Logger logger = LoggerFactory.getLogger(GameManifestProvider.class);
+
     @In
     private Config config;
-
-    private static final Logger logger = LoggerFactory.getLogger(GameManifestProvider.class);
 
     private GameManifestProvider() {
     }
@@ -78,14 +78,18 @@ public class GameManifestProvider {
         String seed;
         if (universeWrapper.getTargetWorld() != null) {
             uri = universeWrapper.getTargetWorld().getWorldGenerator().getUri();
-            seed = universeWrapper.getTargetWorld().getWorldName().toString() + 0;
+            seed = universeWrapper.getTargetWorld().getWorldGenerator().getWorldSeed();
             gameManifest.setSeed(seed);
         } else {
             uri = config.getWorldGeneration().getDefaultGenerator();
             seed = universeWrapper.getSeed();
         }
+        String targetWorldName = "";
+        if (universeWrapper.getTargetWorld() != null) {
+            targetWorldName = universeWrapper.getTargetWorld().getWorldName().toString();
+        }
         // This is multiplied by the number of seconds in a day (86400000) to determine the exact  millisecond at which the game will start.
-        WorldInfo worldInfo = new WorldInfo(TerasologyConstants.MAIN_WORLD, seed,
+        WorldInfo worldInfo = new WorldInfo(TerasologyConstants.MAIN_WORLD, targetWorldName, seed,
                 (long) (WorldTime.DAY_LENGTH * WorldTime.NOON_OFFSET), uri);
 
         gameManifest.addWorld(worldInfo);

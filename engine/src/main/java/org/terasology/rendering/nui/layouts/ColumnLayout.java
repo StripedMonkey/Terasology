@@ -152,7 +152,7 @@ public class ColumnLayout extends CoreLayout<LayoutHint> {
             } else {
                 minRowWidth = canvas.size().x;
                 for (int i = 0; i < columns; ++i) {
-                    minWidths[i] = TeraMath.floorToInt((minRowWidth - (columns - 1) * horizontalSpacing) * columnWidths[i]);
+                    minWidths[i] = TeraMath.floorToInt((minRowWidth - (columns - 1) * (float) horizontalSpacing) * columnWidths[i]);
                 }
             }
 
@@ -206,7 +206,7 @@ public class ColumnLayout extends CoreLayout<LayoutHint> {
             UIWidget widget = row.get(i);
             Vector2i cellSize = new Vector2i(availableWidth, areaHint.y);
             if (!autoSizeColumns) {
-                cellSize.x *= columnWidths[i];
+                cellSize.x = (int) (cellSize.x * columnWidths[i]);
             }
             if (widget != null) {
                 Vector2i contentSize = canvas.calculateRestrictedSize(widget, cellSize);
@@ -289,7 +289,7 @@ public class ColumnLayout extends CoreLayout<LayoutHint> {
             }
         }
 
-        width += horizontalSpacing * (columns - 1);
+        width += (long) horizontalSpacing * (columns - 1);
 
         size.x = (int) Math.min(Integer.MAX_VALUE, width);
         return size;

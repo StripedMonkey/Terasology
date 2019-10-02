@@ -22,12 +22,9 @@ import org.terasology.math.ChunkMath;
 import org.terasology.math.Region3i;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Vector3i;
-import org.terasology.world.biomes.Biome;
-import org.terasology.world.biomes.BiomeManager;
 import org.terasology.world.block.Block;
 import org.terasology.world.chunks.Chunk;
 import org.terasology.world.chunks.ChunkConstants;
-import org.terasology.world.liquid.LiquidData;
 
 /**
  */
@@ -88,27 +85,6 @@ public class ChunkViewCoreImpl implements ChunkViewCore {
     }
 
     @Override
-    public Biome getBiome(float x, float y, float z) {
-        return getBiome(TeraMath.floorToInt(x + 0.5f), TeraMath.floorToInt(y + 0.5f), TeraMath.floorToInt(z + 0.5f));
-    }
-
-    @Override
-    public Biome getBiome(Vector3i pos) {
-        return getBiome(pos.x, pos.y, pos.z);
-    }
-
-    @Override
-    public Biome getBiome(int blockX, int blockY, int blockZ) {
-        if (!blockRegion.encompasses(blockX, blockY, blockZ)) {
-            return BiomeManager.getUnknownBiome();
-        }
-
-        int chunkIndex = relChunkIndex(blockX, blockY, blockZ);
-        Vector3i blockPos = ChunkMath.calcBlockPos(blockX, blockY, blockZ, chunkFilterSize);
-        return chunks[chunkIndex].getBiome(blockPos.x, blockPos.y, blockPos.z);
-    }
-
-    @Override
     public byte getSunlight(float x, float y, float z) {
         return getSunlight(TeraMath.floorToInt(x + 0.5f), TeraMath.floorToInt(y + 0.5f), TeraMath.floorToInt(z + 0.5f));
     }
@@ -160,52 +136,6 @@ public class ChunkViewCoreImpl implements ChunkViewCore {
             chunks[chunkIndex].setBlock(ChunkMath.calcBlockPos(blockX, blockY, blockZ, chunkFilterSize), type);
         } else {
             logger.warn("Attempt to modify block outside of the view");
-        }
-    }
-
-    @Override
-    public void setBiome(Vector3i pos, Biome biome) {
-        setBiome(pos.x, pos.y, pos.z, biome);
-    }
-
-    @Override
-    public void setBiome(int blockX, int blockY, int blockZ, Biome biome) {
-        if (blockRegion.encompasses(blockX, blockY, blockZ)) {
-            int chunkIndex = relChunkIndex(blockX, blockY, blockZ);
-            Vector3i pos = ChunkMath.calcBlockPos(blockX, blockY, blockZ, chunkFilterSize);
-            chunks[chunkIndex].setBiome(pos.x, pos.y, pos.z, biome);
-        } else {
-            logger.warn("Attempt to modify biome outside of the view");
-        }
-    }
-
-    @Override
-    public LiquidData getLiquid(Vector3i pos) {
-        return getLiquid(pos.x, pos.y, pos.z);
-    }
-
-    @Override
-    public LiquidData getLiquid(int x, int y, int z) {
-        if (!blockRegion.encompasses(x, y, z)) {
-            return new LiquidData();
-        }
-
-        int chunkIndex = relChunkIndex(x, y, z);
-        return chunks[chunkIndex].getLiquid(ChunkMath.calcBlockPos(x, y, z, chunkFilterSize));
-    }
-
-    @Override
-    public void setLiquid(Vector3i pos, LiquidData newState) {
-        setLiquid(pos.x, pos.y, pos.z, newState);
-    }
-
-    @Override
-    public void setLiquid(int x, int y, int z, LiquidData newState) {
-        if (blockRegion.encompasses(x, y, z)) {
-            int chunkIndex = relChunkIndex(x, y, z);
-            chunks[chunkIndex].setLiquid(ChunkMath.calcBlockPos(x, y, z, chunkFilterSize), newState);
-        } else {
-            throw new IllegalStateException("Attempted to modify liquid data though an unlocked view");
         }
     }
 

@@ -19,16 +19,13 @@ import org.terasology.math.Region3i;
 import org.terasology.math.geom.BaseVector3i;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.module.sandbox.API;
-import org.terasology.world.biomes.Biome;
 import org.terasology.world.block.Block;
-import org.terasology.world.liquid.LiquidData;
 
 /**
  * This interface describes the core of a chunk:
  * <ul>
  * <li>Chunk position</li>
  * <li>Block read/write</li>
- * <li>Liquid read/write</li>
  * <li>Extra data read/write</li>
  * <li>Chunk to world position conversion</li>
  * <li>Chunk size and region</li>
@@ -81,80 +78,6 @@ public interface CoreChunk {
      */
     Block setBlock(BaseVector3i pos, Block block);
 
-    /**
-     * Sets biome at given position relative to the chunk.
-     *
-     * @param x     X offset from the corner of the chunk
-     * @param y     Y offset from the corner of the chunk
-     * @param z     Z offset from the corner of the chunk
-     * @param biome Biome to set block at given position to
-     * @return Old Biome at given position
-     */
-    Biome setBiome(int x, int y, int z, Biome biome);
-
-    /**
-     * Sets biome at given position relative to the chunk.
-     *
-     * @param pos   Position of the block relative to corner of the chunk
-     * @param biome Biome to set block at given position to
-     * @return Old Biome at given position
-     */
-    Biome setBiome(BaseVector3i pos, Biome biome);
-
-    /**
-     * Returns Biome at given position relative to the chunk.
-     *
-     * @param x X offset from the corner of the chunk
-     * @param y Y offset from the corner of the chunk
-     * @param z Z offset from the corner of the chunk
-     * @return Biome at given position
-     */
-    Biome getBiome(int x, int y, int z);
-
-    /**
-     * Returns Biome at given position relative to the chunk.
-     *
-     * @param pos Position of the block relative to corner of the chunk
-     * @return Biome at given position
-     */
-    Biome getBiome(BaseVector3i pos);
-
-    /**
-     * Sets liquid state at given position relative to the chunk.
-     *
-     * @param pos   Position of the block relative to corner of the chunk
-     * @param state Liquid state to set the block to
-     */
-    void setLiquid(BaseVector3i pos, LiquidData state);
-
-    /**
-     * Sets liquid state at given position relative to the chunk.
-     *
-     * @param x        X offset from the corner of the chunk
-     * @param y        Y offset from the corner of the chunk
-     * @param z        Z offset from the corner of the chunk
-     * @param newState Liquid state to set the block to
-     */
-    void setLiquid(int x, int y, int z, LiquidData newState);
-
-    /**
-     * Returns liquid state at given position relative to the chunk.
-     *
-     * @param pos Position of the block relative to corner of the chunk
-     * @return Liquid state currently assigned to the block
-     */
-    LiquidData getLiquid(BaseVector3i pos);
-
-    /**
-     * Returns liquid state at given position relative to the chunk.
-     *
-     * @param x X offset from the corner of the chunk
-     * @param y Y offset from the corner of the chunk
-     * @param z Z offset from the corner of the chunk
-     * @return Liquid state currently assigned to the block
-     */
-    LiquidData getLiquid(int x, int y, int z);
-    
     /**
      * Sets one of the per-block custom data values at a given position relative to the chunk.
      * The given value is downcast from int to the appropriate type for the array. It is not
