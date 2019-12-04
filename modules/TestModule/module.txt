@@ -1,0 +1,9 @@
+{
+    "id" : "TestModule",
+    "version" : "0.1.0-SNAPSHOT",
+    "author" : "",
+    "displayName" : "TestModule",
+    "description" : "",
+    "dependencies" : [],
+    "serverSideOnly" : false
+}
